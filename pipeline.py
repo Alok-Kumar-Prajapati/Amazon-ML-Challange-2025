@@ -307,7 +307,7 @@ def print_gpu_stats():
     """Print GPU utilization statistics"""
     if torch.cuda.is_available():
         logger.info("\n" + "="*70)
-        logger.info("🖥️  GPU DIAGNOSTICS")
+        logger.info("  GPU DIAGNOSTICS")
         logger.info("="*70)
         logger.info(f"GPU Name: {torch.cuda.get_device_name(0)}")
         logger.info(f"CUDA Version: {torch.version.cuda}")
@@ -386,7 +386,7 @@ def main():
             ckpt_path = os.path.join(CONFIG.CHECKPOINT_DIR, f'fold_{fold}', 'last_epoch.pt')
             if os.path.exists(ckpt_path):
                 logger.info("\n" + "="*70)
-                logger.info("✅ MODEL CHECKPOINT LOADED SUCCESSFULLY!")
+                logger.info(" MODEL CHECKPOINT LOADED SUCCESSFULLY!")
                 logger.info("="*70)
                 checkpoint = torch.load(ckpt_path, map_location=CONFIG.DEVICE)
                 model.load_state_dict(checkpoint['model_state_dict'])
@@ -401,24 +401,24 @@ def main():
                 
                 start_epoch = checkpoint.get('epoch', -1) + 1
                 best_val_loss = checkpoint.get('best_val_loss', float('inf'))
-                logger.info(f"📦 Fold: {fold}")
-                logger.info(f"📍 Resuming from epoch: {start_epoch}")
-                logger.info(f"📊 Best validation loss (so far): {best_val_loss:.6f}")
-                logger.info(f"⚙️  Model state dict loaded with {sum(p.numel() for p in model.parameters()):,} parameters")
-                logger.info(f"⚙️  Optimizer state dict restored and moved to {CONFIG.DEVICE}")
-                logger.info(f"💾 Checkpoint location: {ckpt_path}")
+                logger.info(f" Fold: {fold}")
+                logger.info(f" Resuming from epoch: {start_epoch}")
+                logger.info(f" Best validation loss (so far): {best_val_loss:.6f}")
+                logger.info(f"  Model state dict loaded with {sum(p.numel() for p in model.parameters()):,} parameters")
+                logger.info(f"  Optimizer state dict restored and moved to {CONFIG.DEVICE}")
+                logger.info(f" Checkpoint location: {ckpt_path}")
                 logger.info("="*70)
             else:
                 logger.info("\n" + "="*70)
-                logger.warning("⚠️  NO CHECKPOINT FOUND FOR THIS FOLD - Starting fresh!")
-                logger.info(f"📍 Starting from epoch: 0")
-                logger.info(f"📦 Fold: {fold}")
+                logger.warning("  NO CHECKPOINT FOUND FOR THIS FOLD - Starting fresh!")
+                logger.info(f" Starting from epoch: 0")
+                logger.info(f" Fold: {fold}")
                 logger.info("="*70)
         else:
             logger.info("\n" + "="*70)
-            logger.info("📝 FRESH TRAINING MODE")
-            logger.info(f"📍 Starting from epoch: 0")
-            logger.info(f"📦 Fold: {fold}")
+            logger.info(" FRESH TRAINING MODE")
+            logger.info(f" Starting from epoch: 0")
+            logger.info(f" Fold: {fold}")
             logger.info("="*70)
         
         num_training_steps = math.ceil(len(train_loader) / CONFIG.GRAD_ACCUM_STEPS) * CONFIG.EPOCHS
@@ -467,12 +467,12 @@ def main():
     import joblib
     joblib.dump(stacking_model, lgb_model_path)
     logger.info("\n" + "="*70)
-    logger.info("✅ LightGBM Stacking Model Saved Successfully!")
+    logger.info(" LightGBM Stacking Model Saved Successfully!")
     logger.info("="*70)
-    logger.info(f"📦 Model saved at: {lgb_model_path}")
-    logger.info(f"🎯 Model type: LGBMRegressor")
-    logger.info(f"📊 Number of estimators: {stacking_model.n_estimators}")
-    logger.info(f"📈 Learning rate: {stacking_model.learning_rate}")
+    logger.info(f" Model saved at: {lgb_model_path}")
+    logger.info(f" Model type: LGBMRegressor")
+    logger.info(f" Number of estimators: {stacking_model.n_estimators}")
+    logger.info(f" Learning rate: {stacking_model.learning_rate}")
     logger.info("="*70 + "\n")
     
     # Predict on train data using final stacked model
@@ -483,7 +483,7 @@ def main():
     train_smape = calculate_smape(train_targets_actual, train_preds)
     
     logger.info("\n" + "="*70)
-    logger.info("📊 FINAL MODEL PERFORMANCE ON TRAINING DATA")
+    logger.info(" FINAL MODEL PERFORMANCE ON TRAINING DATA")
     logger.info("="*70)
     logger.info(f"Train SMAPE: {train_smape:.4f}%")
     logger.info("="*70 + "\n")
@@ -494,7 +494,7 @@ def main():
     final_preds[final_preds < 0] = 0.01
     submission_df = pd.DataFrame({'sample_id': test_df['sample_id'], 'price': final_preds})
     submission_df.to_csv('test_out.csv', index=False)
-    logger.info("\n✅ Finished: test_out.csv saved!")
+    logger.info("\n Finished: test_out.csv saved!")
     logger.info(submission_df.head())
 
 if __name__ == "__main__":
