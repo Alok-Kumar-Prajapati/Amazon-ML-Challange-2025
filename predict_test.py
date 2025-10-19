@@ -171,32 +171,32 @@ def main():
     logger.info("="*70 + "\n")
     
     # Load test data
-    logger.info("📂 Loading test data...")
+    logger.info(" Loading test data...")
     test_df = pd.read_parquet("../processed_test.parquet")
     for col in CONFIG.MULTI_LABEL_COLS:
         if col not in test_df.columns:
             test_df[col] = 0
-    logger.info(f"✅ Test data loaded: {len(test_df)} samples")
+    logger.info(f" Test data loaded: {len(test_df)} samples")
     
     # Load tokenizer and transforms
     logger.info("\n🔧 Loading tokenizer and transforms...")
     tokenizer = AutoTokenizer.from_pretrained(CONFIG.TEXT_MODEL_NAME)
     clip_stats = {'mean': [0.48145466, 0.4578275, 0.40821073], 'std': [0.26862954, 0.26130258, 0.27577711]}
     val_transform = transforms.Compose([transforms.Resize(224), transforms.CenterCrop(224), transforms.ToTensor(), transforms.Normalize(**clip_stats)])
-    logger.info("✅ Tokenizer and transforms loaded")
+    logger.info(" Tokenizer and transforms loaded")
     
     # Generate test predictions from all folds
     logger.info("\n" + "="*70)
-    logger.info("🧠 GENERATING NEURAL NETWORK PREDICTIONS FROM ALL FOLDS")
+    logger.info(" GENERATING NEURAL NETWORK PREDICTIONS FROM ALL FOLDS")
     logger.info("="*70)
     test_preds_list = []
     
     for fold in range(CONFIG.NUM_FOLDS):
-        logger.info(f"\n📦 Processing Fold {fold}...")
+        logger.info(f"\n Processing Fold {fold}...")
         model_path = os.path.join(CONFIG.CHECKPOINT_DIR, f'fold_{fold}', 'best_model.pt')
         
         if not os.path.exists(model_path):
-            logger.warning(f"⚠️  Model not found for fold {fold} at {model_path}")
+            logger.warning(f"  Model not found for fold {fold} at {model_path}")
             continue
         
         logger.info(f"   Loading model from: {model_path}")
@@ -211,7 +211,7 @@ def main():
         # Make predictions
         fold_preds = predict(test_loader, model, CONFIG)
         test_preds_list.append(fold_preds)
-        logger.info(f"   ✅ Fold {fold} predictions generated: shape {fold_preds.shape}")
+        logger.info(f"    Fold {fold} predictions generated: shape {fold_preds.shape}")
         
         del model
         if torch.cuda.is_available():
@@ -219,42 +219,42 @@ def main():
         gc.collect()
     
     # Average predictions across folds
-    logger.info("\n📊 Averaging predictions across all folds...")
+    logger.info("\n Averaging predictions across all folds...")
     if len(test_preds_list) == 0:
-        logger.error("❌ No predictions generated!")
+        logger.error(" No predictions generated!")
         return
     
     avg_test_preds = np.mean(test_preds_list, axis=0)
-    logger.info(f"✅ Averaged predictions shape: {avg_test_preds.shape}")
+    logger.info(f" Averaged predictions shape: {avg_test_preds.shape}")
     
     # Load LightGBM stacking model
     logger.info("\n" + "="*70)
-    logger.info("⚙️  LOADING LIGHTGBM STACKING MODEL")
+    logger.info("  LOADING LIGHTGBM STACKING MODEL")
     logger.info("="*70)
     lgb_model_path = os.path.join(CONFIG.CHECKPOINT_DIR, 'stacking_lightgbm_model.pkl')
     
     if not os.path.exists(lgb_model_path):
-        logger.error(f"❌ LightGBM model not found at {lgb_model_path}")
+        logger.error(f" LightGBM model not found at {lgb_model_path}")
         return
     
-    logger.info(f"📦 Loading model from: {lgb_model_path}")
+    logger.info(f" Loading model from: {lgb_model_path}")
     stacking_model = joblib.load(lgb_model_path)
-    logger.info("✅ LightGBM model loaded successfully!")
+    logger.info(" LightGBM model loaded successfully!")
     
     # Prepare features for LightGBM
-    logger.info("\n🔄 Preparing features for stacking model...")
+    logger.info("\n Preparing features for stacking model...")
     X_test = np.hstack([avg_test_preds.reshape(-1, 1), test_df[CONFIG.NUMERIC_COLS].values])
-    logger.info(f"✅ Test features prepared: shape {X_test.shape}")
+    logger.info(f" Test features prepared: shape {X_test.shape}")
     
     # Make final predictions
-    logger.info("\n🎯 Making final predictions with stacking model...")
+    logger.info("\n Making final predictions with stacking model...")
     final_preds_log = stacking_model.predict(X_test)
     final_preds = np.expm1(final_preds_log)
     final_preds[final_preds < 0] = 0.01
-    logger.info(f"✅ Final predictions generated: {len(final_preds)} samples")
+    logger.info(f" Final predictions generated: {len(final_preds)} samples")
     
     # Create submission dataframe
-    logger.info("\n💾 Creating submission file...")
+    logger.info("\n Creating submission file...")
     submission_df = pd.DataFrame({
         'sample_id': test_df['sample_id'].values,
         'price': final_preds
@@ -263,11 +263,11 @@ def main():
     # Save to CSV
     submission_path = 'test_out.csv'
     submission_df.to_csv(submission_path, index=False)
-    logger.info(f"✅ Submission saved to: {submission_path}")
+    logger.info(f" Submission saved to: {submission_path}")
     
     # Print summary statistics
     logger.info("\n" + "="*70)
-    logger.info("📈 SUBMISSION SUMMARY")
+    logger.info(" SUBMISSION SUMMARY")
     logger.info("="*70)
     logger.info(f"Total predictions: {len(submission_df)}")
     logger.info(f"Min price: {submission_df['price'].min():.6f}")
@@ -278,11 +278,11 @@ def main():
     logger.info("="*70)
     
     # Print first few rows
-    logger.info("\n📋 First 20 predictions:")
+    logger.info("\n First 20 predictions:")
     logger.info("\n" + submission_df.head(20).to_string(index=False))
     
     logger.info("\n" + "="*70)
-    logger.info("✅ INFERENCE COMPLETED SUCCESSFULLY!")
+    logger.info(" INFERENCE COMPLETED SUCCESSFULLY!")
     logger.info("="*70 + "\n")
 
 if __name__ == "__main__":
