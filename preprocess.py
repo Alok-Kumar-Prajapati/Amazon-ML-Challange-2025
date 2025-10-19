@@ -125,7 +125,7 @@ final_test = test_df[feature_cols + ['sample_id']]
 final_train.to_parquet("../processed_train.parquet", index=False)
 final_test.to_parquet("../processed_test.parquet", index=False)
 
-print("✅ Preprocessing complete.")
+print(" Preprocessing complete.")
 print("Train sample:")
 print(final_train.head())
 print("Test sample:")
